@@ -1,0 +1,112 @@
+services:
+  masterportal:
+    container_name: ${COMPOSE_PROJECT_NAME}-masterportal
+    build:
+      context: ${CUT_DANA_MP_DIR}/
+      dockerfile: Dockerfile.dev
+    environment:
+      HOSTNAME: app.${HOSTNAME}
+      WATCHPACK_POLLING: "true"
+    volumes:
+      - ${CUT_DANA_MP_DIR}/:/app/
+      - ${CUT_DANA_MP_ADDON_DIR}/addonsConf.json:/app/addons/addonsConf.json
+      - ${CUT_DANA_MP_ADDON_DIR}/:/app/addons/dipasAddons/dataNarrator
+    networks:
+      - cut-dana-network
+
+  backend:
+    container_name: ${COMPOSE_PROJECT_NAME}-backend
+    build:
+      context: ${CUT_DANA_BACKEND_DIR}/
+      dockerfile: Dockerfile.dev
+    environment:
+      DATABASE_URL: "postgresql://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT}/${DATABASE_DB}?schema=public"
+      KEYCLOAK_URL: ${KEYCLOAK_URL}
+      KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+      KEYCLOAK_CLIENT_ID: ${KEYCLOAK_CLIENT_ID}
+      KEYCLOAK_CLIENT_SECRET: ${KEYCLOAK_CLIENT_SECRET}
+      KEYCLOAK_FRONTEND_CLIENT_ID: ${KEYCLOAK_FRONTEND_CLIENT_ID}
+      USE_AUTHENTICATION: ${USE_AUTHENTICATION}
+      MINIO_BUCKET: ${MINIO_DEFAULT_BUCKET}
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_USE_SSL: ${MINIO_USE_SSL}
+      MINIO_PORT: ${MINIO_PORT}
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+      FRONTEND_URI: https://app.cut-dana-platform.local/portal/stories/
+    volumes:
+      - ${CUT_DANA_BACKEND_DIR}/:/app/
+    networks:
+      - cut-dana-network
+    extra_hosts:
+      - "auth.cut-dana-platform.local:${HOST_IP}"
+      - "minio.cut-dana-platform.local:${HOST_IP}"
+    depends_on:
+      db:
+        condition: service_healthy
+      garage:
+        condition: service_healthy
+      keycloak-app:
+        condition: service_started
+
+  mkcert:
+    container_name: ${COMPOSE_PROJECT_NAME}-mkcert
+    image: vishnunair/docker-mkcert@sha256:bbaff8dac84f4d6fe5ffe36d954e838347864adfb0ae434106ef5b6d188e8729
+    environment:
+      domain: ${HOSTNAME}
+    volumes:
+      - ${PWD}/nginx/certs/:/root/.local/share/mkcert/
+    command: /bin/sh -c 'mkcert -install "*.${HOSTNAME}" && for i in $$(echo $$domain | sed "s/,/ /g"); do [ ! -f /root/.local/share/mkcert/$$i.pem ] && mkcert $$i; done && tail -f -n0 /etc/hosts'
+    healthcheck:
+      test: ["CMD", "test", "-f", "/root/.local/share/mkcert/${HOSTNAME}.pem"]
+      interval: 5s
+      start_period: 2s
+
+  nginx:
+    container_name: ${COMPOSE_PROJECT_NAME}-nginx
+    environment:
+      CUT_DANA_PLATFORM_HOST: ${HOSTNAME}
+    image: nginx:1.29-alpine-slim@sha256:0848ca84c476868cbeb6a5c2c009a98821b8540f96c44b1ba06820db50262e35
+    networks:
+      - cut-dana-network
+    ports:
+      - "443:443"
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_started
+      keycloak-app:
+        condition: service_started
+    healthcheck:
+      test: [ "CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:80/health" ]
+      interval: 30s
+      timeout: 5s
+      start_period: 5s
+      retries: 3
+    volumes:
+      - ${PWD}/nginx/proxy_params:/etc/nginx/proxy_params
+      - ${PWD}/nginx/certs/:/etc/nginx/certs/:ro
+      - ${PWD}/nginx/gzip.conf:/etc/nginx/gzip.conf
+      - ${PWD}/nginx/ssl.conf:/etc/nginx/ssl.conf
+      - ${PWD}/nginx/dev.conf:/etc/nginx/templates/default.conf.template
+
+  keycloak-db:
+    ports:
+      - "5555:5432"
+
+  db:
+    ports:
+      - "6666:5432"
+
+  keycloak-app:
+    environment:
+      KC_HOSTNAME: auth.${HOSTNAME}
+      KC_CHECK_LOGIN_IFRAME: "false"
+      KC_PROXY_HEADERS: "xforwarded"
+
+  garage:
+    ports:
+      - "3900:3900"
+      - "3901:3901"
+      - "3902:3902"
+      - "3903:3903"

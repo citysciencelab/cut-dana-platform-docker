@@ -1,0 +1,14 @@
+postgres/data
+postgres-keycloak/data
+.env
+coverage
+!keycloak/init_data/keycloak_masterportal_realm.json
+nginx/certs/*
+!nginx/certs/.gitkeep
+
+# IntelliJ IDEA
+.idea
+*.iml
+
+# Garage toml
+garage/garage.toml
