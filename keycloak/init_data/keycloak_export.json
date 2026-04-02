@@ -300,7 +300,17 @@
           "attributes": {}
         }
       ],
-      "masterportal-client": [],
+      "masterportal-client": [
+        {
+          "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+          "name": "admin",
+          "description": "Admin role for masterportal",
+          "composite": false,
+          "clientRole": true,
+          "containerId": "d159e586-7fe5-494c-928f-26c687adabe4",
+          "attributes": {}
+        }
+      ],
       "security-admin-console": [],
       "admin-cli": [],
       "account-console": [],
@@ -868,16 +878,6 @@
         "organization",
         "offline_access",
         "microprofile-jwt"
-      ],
-      "roles": [
-        {
-          "name": "admin",
-          "description": "Admin role for masterportal",
-          "composite": false,
-          "clientRole": true,
-          "containerId": "d159e586-7fe5-494c-928f-26c687adabe4",
-          "attributes": {}
-        }
       ]
     },
     {
