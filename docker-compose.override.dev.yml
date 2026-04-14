@@ -6,7 +6,7 @@ services:
       dockerfile: Dockerfile.dev
     environment:
       HOSTNAME: app.${HOSTNAME}
-      WATCHPACK_POLLING: "true"
+      WATCHPACK_POLLING: "false"
     volumes:
       - ${CUT_DANA_MP_DIR}/:/app/
       - ${CUT_DANA_MP_ADDON_DIR}/addonsConf.json:/app/addons/addonsConf.json

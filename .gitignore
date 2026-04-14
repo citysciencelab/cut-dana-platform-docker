@@ -1,6 +1,8 @@
 postgres/data
 postgres-keycloak/data
 .env
+.env.prod
+docker-compose.prod.yml
 coverage
 !keycloak/init_data/keycloak_masterportal_realm.json
 nginx/certs/*
