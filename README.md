@@ -1,4 +1,33 @@
-# cut-dana-platform-docker
+# Data Narrator
+
+## City Science Lab
+
+<p align="center">
+<img src="https://user-images.githubusercontent.com/36763878/219619895-12db4431-32d9-458b-a73f-548052404258.png" alt="Data Narrator logo" />
+</p>
+
+The Data Narrator Platform is a story-driven geospatial application for creating, editing and playing narrative map
+experiences. It combines 2D and 3D map views with text, images, GeoJSON, WMS layers, 3D layers and interactive map
+states so complex urban data can be communicated step by step.
+
+This repository specifically contains the **Docker-based setup and deployment scaffolding** for the platform. Its role is
+to orchestrate the local development stack and wire the separate repositories together so the complete Data Narrator
+environment can run consistently.
+
+## Repository roles
+
+| Repository | Role |
+|---|---|
+| [`cut-dana-platform-addon`](https://github.com/citysciencelab/cut-dana-platform-addon) | Frontend add-on for the Data Narrator UI and story workflow inside Masterportal |
+| [`cut-dana-platform-mp`](https://github.com/citysciencelab/cut-dana-platform-mp) | Masterportal-based map client that hosts and integrates the add-on |
+| [`cut-dana-platform-backend`](https://github.com/citysciencelab/cut-dana-platform-backend) | Backend service for story persistence, files, API access and application data |
+| [`cut-dana-platform-docker`](https://github.com/citysciencelab/cut-dana-platform-docker) | Docker-based local and deployment setup for running the full platform stack |
+
+## Role of this repository
+
+`cut-dana-platform-docker` is the infrastructure and orchestration repository of the platform. It is responsible for
+bringing up the connected services, mounting the other repositories into the stack and defining the local environment for
+frontend, backend, authentication, storage and database components.
 
 **Warning**: This is just a simple demo setup that is not suited for production use!
 
